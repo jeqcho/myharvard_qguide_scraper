@@ -46,6 +46,15 @@ The code for the website can be found at [this repo](https://github.com/jeqcho/h
 
 ## Installation
 
+If you use a virtual environment, please specify Python 3.11 for numpy compatibility
+
+```bash
+conda create -n harvard-gems python=3.11
+conda activate harvard-gems
+```
+
+Then install the requirements
+
 `pip install -r requirements.txt`
 
 ## Usage
@@ -53,7 +62,7 @@ The code for the website can be found at [this repo](https://github.com/jeqcho/h
 You probably don't need to follow the steps below since the results can be found at `verbose_course_ratings.csv`, but
 this is a step-by-step guide on how to create that csv from scratch.
 
-1. Download the webpage from the link in `scrapper.py` as a HTML file named`QReports.html`. Run `scrapper.py` to scrape the links for the QGuides for each course. The links generated will be stored at `courses.csv`.
+1. Download the webpage from the link in `scrapper.py` as a HTML-only file named`QReports.html`. Run `scrapper.py` to scrape the links for the QGuides for each course. The links generated will be stored at `courses.csv`.
 2. Visit any QGuide links scrapped at `courses.csv` to get the cookies (see the code of `downloader.py` for the search term `secret_cookie`) and paste it at a new file named `secret_cookie.txt`. Run `downloader.py` to download all the QGuides with the links scrapped from the previous step. The QGuides will be
    stored at the folder `QGuides`.
 3. Run `analyzer.py` to generate `course_ratings.csv`.
