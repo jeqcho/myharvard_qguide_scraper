@@ -26,9 +26,13 @@ global_count = 0
 if not os.path.exists('QGuides'):
     os.makedirs('QGuides')
 
-# Choose any QGuide link, visit it on your browser, then open DevTools to copy everything in the cookie field
+# Choose any QGuide link, visit it on your browser, then open DevTools (Applications pane)
+# to copy everything in the cookie field
 # There should be three cookies: ASP.NET_SessionId, CookieName, and session_token
 # Copy paste the entire cookie string into secret_cookie.txt as one line.
+# You should create the secret cookie file
+# the file should looke like
+# "ASP.NET_SessionId=value; CookieName=value2; session_token=value3"
 with open('secret_cookie.txt', 'r') as f:
     cookie = f.read()
 

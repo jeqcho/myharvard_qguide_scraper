@@ -14,7 +14,8 @@ def process(text, course_code):
         return -1
 
     soup_term = soup.find_all("div", class_="isSCL_LBTermLabel")[0].text
-    if soup_term.strip() != "2024 Fall":
+    # edit this to the upcoming term
+    if soup_term.strip() != "2025 Spring":
         print("Wrong term")
         print(soup_term)
         return -1

@@ -1,4 +1,5 @@
 # rescrape for those who have sections, so need to click again
+# remember to edit the term below
 import time
 import urllib.parse
 
@@ -31,7 +32,10 @@ class AnyEc:
                 pass
 
 
-season = "fall"
+driver_path = "/Users/jeqcho/chromedriver-mac-arm64/chromedriver"
+driver = webdriver.Chrome(service=Service(driver_path))
+
+season = "spring"
 container_url = 'https://courses.my.harvard.edu/psp/courses/EMPLOYEE/EMPL/h/?tab=HU_CLASS_SEARCH&SearchReqJSON=%7B' \
                 '%22ExcludeBracketed%22%3Atrue%2C%22SaveRecent%22%3Atrue%2C%22Facets%22%3A%5B%5D%2C%22PageNumber%22' \
                 '%3A1%2C%22SortOrder%22%3A%5B%22SCORE%22%5D%2C%22TopN%22%3A%22%22%2C%22PageSize%22%3A%22%22%2C' \
@@ -41,9 +45,6 @@ df = pd.read_csv('courses.csv')
 
 results = []
 course_codes = list(dict.fromkeys(df.course_code.tolist()))
-
-# to continue from errors
-course_codes = course_codes[course_codes.index('EXPOS 20'):]
 
 to_be_rescraped = []
 for course_code in course_codes:
@@ -61,8 +62,6 @@ urls = [container_url.format(urllib.parse.quote(x)) for x in to_be_rescraped]
 for i in range(len(urls)):
     PACKAGES.append([urls[i], to_be_rescraped[i]])
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-
 for idx, package in enumerate(PACKAGES):
     url = package[0]
     course_code = package[1]
@@ -74,7 +73,7 @@ for idx, package in enumerate(PACKAGES):
 
     try:
         driver.find_elements(By.CLASS_NAME, "isSCL_ResultItem")[0].click()
-        time.sleep(3) # increase this if necessary
+        time.sleep(10) # increase if necessary
         driver.find_elements(By.CLASS_NAME, "isSCL_ResultItem")[1].click()
         element = driver.find_element(By.ID, "lbContentMain")
 

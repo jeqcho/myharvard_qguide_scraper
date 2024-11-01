@@ -9,8 +9,9 @@ from bs4 import BeautifulSoup
 from nltk.sentiment import SentimentIntensityAnalyzer
 from tqdm import tqdm
 
-# import nltk
-# nltk.download('vader_lexicon')
+# you might need to uncomment the below
+import nltk
+nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 
 

@@ -15,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 if not os.path.exists('myharvard'):
     os.makedirs('myharvard')
 
-season = "fall"
+season = "spring"
 container_url = 'https://courses.my.harvard.edu/psp/courses/EMPLOYEE/EMPL/h/?tab=HU_CLASS_SEARCH&SearchReqJSON=%7B' \
                 '%22ExcludeBracketed%22%3Atrue%2C%22SaveRecent%22%3Atrue%2C%22Facets%22%3A%5B%5D%2C%22PageNumber%22' \
                 '%3A1%2C%22SortOrder%22%3A%5B%22SCORE%22%5D%2C%22TopN%22%3A%22%22%2C%22PageSize%22%3A%22%22%2C' \
@@ -26,7 +26,7 @@ course_codes = df.course_code.tolist()
 course_codes = list(dict.fromkeys(course_codes))
 start_index = 0
 # start from a specific class if an error is thrown
-start_index = course_codes.index('CHEM 17')
+# start_index = course_codes.index('CHEM 17')
 
 # remember to delete not-offered.txt if you want to start from the beginning
 # with open('not-offered.txt', 'w') as f:
@@ -42,7 +42,8 @@ for i in range(len(urls)):
 # uncomment for smaller samples
 # PACKAGES = PACKAGES[:10]
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+driver_path = "/Users/jeqcho/chromedriver-mac-arm64/chromedriver"
+driver = webdriver.Chrome(service=Service(driver_path))
 
 
 class AnyEc:
