@@ -1,8 +1,10 @@
-# Harvard Gems
+# myHarvard and QGuide scraper
+
+This scraper compiles Harvard courses and QReport feedback into a nice CSV. Archived results at [archive](./archive).
+
+The scraper is customized for the Harvard Gem [website](https://jeqcho.github.io/harvard-gems), but you can also use the CSV for anything you like.
 
 ![Screenshot of the Harvard Gem website](readme-images/readme-screenshot.png)
-Web scrapper, data analysis and [website](https://jeqcho.github.io/harvard-gems) for the best classes at Harvard.
-
 
 If you found it useful, you can
 
@@ -62,17 +64,45 @@ Then install the requirements
 You probably don't need to follow the steps below since the results can be found at `verbose_course_ratings.csv`, but
 this is a step-by-step guide on how to create that csv from scratch.
 
-1. Download the webpage from the link in `scrapper.py` as a HTML-only file named`QReports.html`. Run `scrapper.py` to scrape the links for the QGuides for each course. The links generated will be stored at `courses.csv`.
-2. Visit any QGuide links scrapped at `courses.csv` to get the cookies (see the code of `downloader.py` for the search term `secret_cookie`) and paste it at a new file named `secret_cookie.txt`. Note that using the current VScode reader for CSV will open a defunct link with other columns suffixed. Manually copy the link and paste it in your browser. Run `downloader.py` to download all the QGuides with the links scrapped from the previous step. The QGuides will be
-   stored at the folder `QGuides`.
-3. Run `analyzer.py` to generate `course_ratings.csv`.
-4. Now we have to add details like divisional requirement or whether it fulfils quantitative reasoning with data (QRD),
-   but most importantly we need to know whether this class is offered in Fall 2024 (the QGuides are for Fall 2023). First clear the `not-offered.txt`. You might need to install Selenium for this step, but first try running `myharvarddriver.py` to use Selenium to get these necessary details from my.harvard.edu. Depending on your machine, you might need more setup to use Selenium, so you can check out the official guide or see my notes below. Make sure to edit `driver_path`. The webpages for each class will be stored as HTML files at the folder `myharvard`. This should be the step that takes the longest (around 1.5 hours), I usually leave it running overnight.
-   - If you need more setup, download it [here](https://googlechromelabs.github.io/chrome-for-testing/#stable). Remember to download the chromedriver and not chrome.
-   - Run this in the folder `xattr -d com.apple.quarantine chromedriver`
-   - You should be able to run it now.
-5. New in 2024 Fall, some classes have sections to be chosen during registration, like CHNSE 130 and EXPOS 40. Run `rescrape.py` to handle these cases which require an additional click.
-   - Simply rerun the file if there are errors. It will pick up those courses that are not done.
+
+### Scraping the QGuide
+
+The code for this section is at [src/qguide_scraper](./src/qguide_scraper).
+
+1. First the program needs to discover all the QGuide links for that year and term. Navigate to this link `https://qreports.fas.harvard.edu/browse/index?school=FAS&calTerm=YEAR%20SEMESTER` where you replace `YEAR` with the current year (e.g. `2025`) and `SEMESTER` with one of `Spring` and `Fall`. It requires login.
+2. Download the webpage (<kbd>ctrl</kbd>+<kbd>s</kbd> or <kbd>cmd</kbd>+<kbd>s</kbd>) as a HTML-only file. Keep the default name `QReports.html` and put it in this folder.
+3. Run `scraper.py` to scrape the links for the QGuides for each course. The links generated will be stored at `courses.csv`.
+4. Visit the first QGuide link scrapped at `courses.csv`. Be careful in VSCode, since it will concat the other fields and result in an invalid URL.
+5. Open the Developer Console, go to Application and click on the Cookie tab. Get the values for `ASP.NET_SessionId` and `CookieName` and paste it to `secret_cookie.txt` in the following format
+   ```text
+   ASP.NET_SessionId=YOUR_VALUE_HERE
+   CookieName=YOUR_VALUE_HERE
+   ```
+6. Make sure you delete the current `QGuides` folder to start afresh if it exists.
+7. Run `downloader.py` to use your cookies to download all the QGuides with the links scrapped from the previous step. The QGuides will be
+   stored at the folder `QGuides`. This takes about 5 minutes.
+8. Run `analyzer.py` to generate `course_ratings.csv`. If you run into a course with bugs, you can copy that FAS string and paste it to the `demo or debug` section of the code. My usual debugging process is to search for that file in the IDE, reveal in Finder, open in Chrome and see what's up.
+
+### Scraping myHarvard
+
+The code for this section is at [src/myharvard](./src/myharvard).
+
+1. Remove existing file `course_lines.txt` to start afresh.
+2. Specify the `year` and `term` at the bottom of `get_myharvard_url_chunks.py` and run it to get the URL chunks of the courses that will be offered. This will generate `course_lines.txt`.
+3. Run `get_all_course_data.py` to get `all_courses.csv`.
+4. Rename this as `YEAR_TERM.csv` like `2025_Fall.csv` and put this in `release/myharvard`.
+
+
+### Combining QGuide and myHarvard for hugems.net
+
 6. Process these webpages to get the data by running `append_details.py`. This will generate `verbose_course_ratings.csv` as required.
 7. Start a Jupyter notebook session (`jupyter notebook`) and choose `course_ratings_analysis.ipynb` to run. This will generate the graphs above and the data at `output_data`. Follow through the notebook and play around!
 8. If you are maintaining this repo, then please make a folder under archive for the upcoming semester, and then put the following files there: `course_ratings.csv`, `courses.csv`, `not-offered.txt`, `QReports.html`, `verbose_course_ratings.csv`.
+
+
+# Future todo
+
+- There is a course catalog PDF at the beta myHarvard. We can use that to generate the myHarvard URLs instead of cycling through the actual website. This will cut down the waiting time from about 10 minutes to near instant, and also save some traffic from hitting Harvard's server.
+- HDS and XREG has bug where their catalog number of the pagination process has a suffix that doesn't appear in the actual URL. Right now, we catch this error when it happens and remove that suffix on the go. There might be a better way to do this.
+- The `src/qguide` code is ancient (pre-Cursor) and can benefit from better design. For example, one can get a better methodology for the gems, especially given LLMs nowadays.
+- There are duplicates on the myHarvard pagination. For example, for 2025 Fall, you can find similar classes (e.g. see Ochestra) on [page 29](https://beta.my.harvard.edu/?q=&school=All&sort=relevance&page=29&Term=2025+Fall&term=All) and on [page 47](https://beta.my.harvard.edu/?q=&school=All&sort=relevance&page=47&Term=2025+Fall&term=All). Right now we drop duplicate rows at `get_all_course_data.py`, but there might be a better way to do this.

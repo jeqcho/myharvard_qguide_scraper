@@ -4,6 +4,10 @@
 
 from bs4 import BeautifulSoup
 import pandas as pd
+import os
+
+# change wd to this folder of this file
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 with open('QReports.html', 'r') as f:
     soup = BeautifulSoup(f, 'html.parser')

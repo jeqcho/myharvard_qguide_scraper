@@ -6,3 +6,10 @@
 
 secret_cookie.txt
 QGuides/*
+
+.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class

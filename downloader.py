@@ -49,7 +49,7 @@ def load_url(package, timeout):
     with open('QGuides/' + filename + '.html', 'w') as f:
         f.write(page.text)
     global_count += 1
-    print(str(global_count / len(PACKAGES) * 100) + '% downloaded')
+    print(f"Progress: {global_count/len(PACKAGES)*100:.2f}% downloaded")
 
 
 # We can use a with statement to ensure threads are cleaned up promptly
