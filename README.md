@@ -1,6 +1,6 @@
 # myHarvard and QGuide scraper
 
-This scraper compiles Harvard courses and QReport feedback into a nice CSV. Archived results at [archive](./archive).
+This scraper compiles Harvard courses and QReport feedback into a nice CSV. Current results are at  [release](./release). Archived results at [archive](./archive).
 
 The scraper is customized for the Harvard Gem [website](https://jeqcho.github.io/harvard-gems), but you can also use the CSV for anything you like.
 
@@ -61,7 +61,7 @@ Then install the requirements
 
 ## Usage
 
-You probably don't need to follow the steps below since the results can be found at `verbose_course_ratings.csv`, but
+You probably don't need to follow the steps below since the results can be found at `release` (or `archive` for older results), but
 this is a step-by-step guide on how to create that csv from scratch.
 
 
@@ -86,7 +86,7 @@ The code for this section is at [src/qguide](./src/qguide).
 
 ### Scraping myHarvard
 
-The code for this section is at [src/myharvard](./src/myharvard).
+The code for this section is at [src/qguide](./src/myharvard).
 
 1. Remove existing file `course_lines.txt` to start afresh.
 2. Specify the `year` and `term` at the bottom of `get_myharvard_url_chunks.py` and run it to get the URL chunks of the courses that will be offered. This will generate `course_lines.txt`.
@@ -96,9 +96,10 @@ The code for this section is at [src/myharvard](./src/myharvard).
 
 ### Combining QGuide and myHarvard for hugems.net
 
-6. Process these webpages to get the data by running `append_details.py`. This will generate `verbose_course_ratings.csv` as required.
-7. Start a Jupyter notebook session (`jupyter notebook`) and choose `course_ratings_analysis.ipynb` to run. This will generate the graphs above and the data at `output_data`. Follow through the notebook and play around!
-8. If you are maintaining this repo, then please make a folder under archive for the upcoming semester, and then put the following files there: `course_ratings.csv`, `courses.csv`, `not-offered.txt`, `QReports.html`, `verbose_course_ratings.csv`.
+The code for this section is at [src/hugems](./src/hugems).
+
+1. Specify the years and terms for the myharvard and qguide at `combine.py` and run it to get `hugems.csv`. This will match the myHarvard records with the qguide using `course_id`.
+2. Run`course_ratings_analysis.ipynb`. This will generate the graphs above and the data at `release/hugems`. Follow through the notebook and play around!
 
 
 # Future todo
@@ -107,3 +108,7 @@ The code for this section is at [src/myharvard](./src/myharvard).
 - HDS and XREG has bug where their catalog number of the pagination process has a suffix that doesn't appear in the actual URL. Right now, we catch this error when it happens and remove that suffix on the go. There might be a better way to do this.
 - The `src/qguide` code is ancient (pre-Cursor) and can benefit from better design. For example, one can get a better methodology for the gems, especially given LLMs nowadays.
 - There are duplicates on the myHarvard pagination. For example, for 2025 Fall, you can find similar classes (e.g. see Ochestra) on [page 29](https://beta.my.harvard.edu/?q=&school=All&sort=relevance&page=29&Term=2025+Fall&term=All) and on [page 47](https://beta.my.harvard.edu/?q=&school=All&sort=relevance&page=47&Term=2025+Fall&term=All). Right now we drop duplicate rows at `get_all_course_data.py`, but there might be a better way to do this.
+- Sometimes, the unique code in `qguide` is not unique when two people with the same last name teach the course together (see GENED 1069 - Courtney Lamberth, Fall 2024). Currently, we simply drop duplicates in `src/hugems/combine.py`.
+- Instead of manually copying over the release files we can programmatically do that.
+- At time of writing March 31 2025, the beta myharvard search doesn't show the course level (though it allows filtering by it). Implement course level scraping somehow. (the old myharvard has it).
+- The new search groups the EXPOS 20 courses under a single course as different sections suffixing the URL with `201`, `202` etc, though they have different course IDs. We currently don't have EXPOS 20 scrapped because we scrape by assuming all the URLs begin with `001`.

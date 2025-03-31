@@ -186,8 +186,13 @@ def analyze(unique_code):
         else:
             sentiment_stats.append(-1)
 
+    # Extract course_id from unique_code
+    # Format: FAS-156950-2248-F2-1-001(Kehayova) -> 156950
+    course_id = unique_code.split('-')[1]
+
     return [
         unique_code,
+        course_id,
         num_responded,
         num_students,
         *course_score_stats,
@@ -217,6 +222,7 @@ print("num_errors: " + str(num_errors))
 
 df2 = pd.DataFrame(stats, columns=[
     'unique_code',
+    'course_id',
     "num_responded",
     "num_students",
     "course_score_mean",
