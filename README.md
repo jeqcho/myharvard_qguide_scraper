@@ -1,18 +1,16 @@
 # myHarvard and QGuide scraper
 
-This scraper compiles Harvard courses and QReport feedback into a nice CSV. Current results are at  [release](./release). Archived results at [archive](./archive).
+This project scrapes [myHarvard](https://my.harvard.edu/) and the [QGuide](https://qreports.fas.harvard.edu/). Current results are at [release](./release). Archived results at [archive](./archive).
 
-The scraper is customized for the Harvard Gem [website](https://jeqcho.github.io/harvard-gems), but you can also use the CSV for anything you like.
-
-![Screenshot of the Harvard Gem website](readme_images/readme-screenshot.png)
+The project is initally built for [hugems.net](https://jeqcho.github.io/harvard-gems) on finding gems, but you can use the CSV for anything you like.
 
 If you found it useful, you can
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/jeqcho)
 
-## Further analytics
+## Results
 
-Course ratings correlate well with recommendation score.
+Course ratings correlate well with recommendation scores.
 
 ![Course score vs recommendation score graph](readme_images/course_vs_rec.png)
 
@@ -40,19 +38,13 @@ There is little correlation between the number of students in the class and the 
 
 ![Course score vs number of students graph](readme_images/course_vs_num_students.png)
 
-More analysis, and the code for the graphs can be found through this [Colab Notebook](https://colab.research.google.com/drive/1WR3_DSCN_aL7l6b5yqrqto8116Ktb_TY?usp=sharing). A copy of
-the notebook is also available in the repo above as `course_ratings_analysis.ipynb`. Remember to upload `verbose_course_ratings.csv` if you hope to tinker around.
-
-## Website
-The code for the website can be found at [this repo](https://github.com/jeqcho/harvard-gems). This repo is for the scrapping and analytics.
-
 ## Installation
 
 If you use a virtual environment, please specify Python 3.11 for numpy compatibility
 
 ```bash
-conda create -n harvard-gems python=3.11
-conda activate harvard-gems
+conda create -n myharvard_qguide_scraper_env python=3.11
+conda activate myharvard_qguide_scraper_env
 ```
 
 Then install the requirements
@@ -61,8 +53,7 @@ Then install the requirements
 
 ## Usage
 
-You probably don't need to follow the steps below since the results can be found at `release` (or `archive` for older results), but
-this is a step-by-step guide on how to create that csv from scratch.
+You probably don't need to follow the steps below since the results can be found at [release](./release) (or [archive](./archive) for older results). If you want to replicate the data release or if you are maintaining this repo for future data release, you can follow the steps below.
 
 
 ### Scraping the QGuide
@@ -79,14 +70,13 @@ The code for this section is at [src/qguide](./src/qguide).
    CookieName=YOUR_VALUE_HERE
    ```
 6. Make sure you delete the current `QGuides` folder to start afresh if it exists.
-7. Run `downloader.py` to use your cookies to download all the QGuides with the links scrapped from the previous step. The QGuides will be
-   stored at the folder `QGuides`. This takes about 5 minutes.
+7. Run `downloader.py` to use your cookies to download all the QGuides with the links scrapped from the previous step. The QGuides will be stored at the folder `QGuides`. This takes about 5 minutes.
 8. Run `analyzer.py` to generate `course_ratings.csv`. If you run into a course with bugs, you can copy that FAS string and paste it to the `demo or debug` section of the code. My usual debugging process is to search for that file in the IDE, reveal in Finder, open in Chrome and see what's up.
 9. Once that's done, rename `course_ratings.csv` as `YEAR_TERM.csv` like `2025_Fall.csv` and put this in `release/qguide`.
 
 ### Scraping myHarvard
 
-The code for this section is at [src/qguide](./src/myharvard).
+The code for this section is at [src/myharvard](./src/myharvard).
 
 1. Remove existing file `course_lines.txt` to start afresh.
 2. Specify the `year` and `term` at the bottom of `get_myharvard_url_chunks.py` and run it to get the URL chunks of the courses that will be offered. This will generate `course_lines.txt`.
@@ -96,10 +86,12 @@ The code for this section is at [src/qguide](./src/myharvard).
 
 ### Combining QGuide and myHarvard for hugems.net
 
+[hugems.net](hugems.net) combines the course offerings on myHarvard of a semester on a year and combines that with the feedback reports on QGuide of the previous year. Note that hugems.net does not provide any information on courses that are spaced two years apart. This section describes how the data release was made for [hugems.net](hugems.net).
+
 The code for this section is at [src/hugems](./src/hugems).
 
-1. Specify the years and terms for the myharvard and qguide at `combine.py` and run it to get `hugems.csv`. This will match the myHarvard records with the qguide using `course_id`.
-2. Run`course_ratings_analysis.ipynb`. This will generate the graphs above and the data at `release/hugems`. Follow through the notebook and play around!
+1. Specify the years and terms for the myharvard and qguide at `combine.py` and run it to get `qguide_myharvard.csv` in the release folder. The CSV inner joins the myHarvard records with the qguide using `course_id`.
+2. Run`course_ratings_analysis.ipynb`. This will generate the graphs above and the rest of the data release at `release/hugems`. Follow through the notebook and play around!
 
 
 # Future todo
