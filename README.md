@@ -4,7 +4,7 @@ This scraper compiles Harvard courses and QReport feedback into a nice CSV. Arch
 
 The scraper is customized for the Harvard Gem [website](https://jeqcho.github.io/harvard-gems), but you can also use the CSV for anything you like.
 
-![Screenshot of the Harvard Gem website](readme-images/readme-screenshot.png)
+![Screenshot of the Harvard Gem website](readme_images/readme-screenshot.png)
 
 If you found it useful, you can
 
@@ -14,31 +14,31 @@ If you found it useful, you can
 
 Course ratings correlate well with recommendation score.
 
-![Course score vs recommendation score graph](readme-images/course_vs_rec.png)
+![Course score vs recommendation score graph](readme_images/course_vs_rec.png)
 
 Course ratings also correlate well with lecturer scores, but with more scatter.
 
-![Course score vs lecturer score graph](readme-images/course_vs_lecturer.png)
+![Course score vs lecturer score graph](readme_images/course_vs_lecturer.png)
 
 Sentiment analysis on the course comments also agree well with its average course rating.
 
-![Course score vs sentiment score graph](readme-images/course_vs_sentiment.png)
+![Course score vs sentiment score graph](readme_images/course_vs_sentiment.png)
 
 Most high-scoring courses have low workload.
 
-![Course score vs workload score graph](readme-images/course_vs_workload.png)
+![Course score vs workload score graph](readme_images/course_vs_workload.png)
 
 Harvard classes tend to have high ratings. It is rare to get a low score.
 
-![Histogram of the courses by rating](readme-images/course_score_freq.png)
+![Histogram of the courses by rating](readme_images/course_score_freq.png)
 
 Most Harvard classes have a workload demand of around 5 hours per week outside of classes, though the distribution is skewed so some classes have much higher workloads.
 
-![Histogram of the courses by workload hours](readme-images/workload_freq.png)
+![Histogram of the courses by workload hours](readme_images/workload_freq.png)
 
 There is little correlation between the number of students in the class and the score of the class.
 
-![Course score vs number of students graph](readme-images/course_vs_num_students.png)
+![Course score vs number of students graph](readme_images/course_vs_num_students.png)
 
 More analysis, and the code for the graphs can be found through this [Colab Notebook](https://colab.research.google.com/drive/1WR3_DSCN_aL7l6b5yqrqto8116Ktb_TY?usp=sharing). A copy of
 the notebook is also available in the repo above as `course_ratings_analysis.ipynb`. Remember to upload `verbose_course_ratings.csv` if you hope to tinker around.
@@ -67,10 +67,10 @@ this is a step-by-step guide on how to create that csv from scratch.
 
 ### Scraping the QGuide
 
-The code for this section is at [src/qguide_scraper](./src/qguide_scraper).
+The code for this section is at [src/qguide](./src/qguide).
 
 1. First the program needs to discover all the QGuide links for that year and term. Navigate to this link `https://qreports.fas.harvard.edu/browse/index?school=FAS&calTerm=YEAR%20SEMESTER` where you replace `YEAR` with the current year (e.g. `2025`) and `SEMESTER` with one of `Spring` and `Fall`. It requires login.
-2. Download the webpage (<kbd>ctrl</kbd>+<kbd>s</kbd> or <kbd>cmd</kbd>+<kbd>s</kbd>) as a HTML-only file. Keep the default name `QReports.html` and put it in this folder.
+2. Download the webpage (<kbd>ctrl</kbd>+<kbd>s</kbd> or <kbd>cmd</kbd>+<kbd>s</kbd>) as a HTML-only file. Keep the default name `QReports.html` and put it in this folder replacing the old file.
 3. Run `scraper.py` to scrape the links for the QGuides for each course. The links generated will be stored at `courses.csv`.
 4. Visit the first QGuide link scrapped at `courses.csv`. Be careful in VSCode, since it will concat the other fields and result in an invalid URL.
 5. Open the Developer Console, go to Application and click on the Cookie tab. Get the values for `ASP.NET_SessionId` and `CookieName` and paste it to `secret_cookie.txt` in the following format
@@ -82,6 +82,7 @@ The code for this section is at [src/qguide_scraper](./src/qguide_scraper).
 7. Run `downloader.py` to use your cookies to download all the QGuides with the links scrapped from the previous step. The QGuides will be
    stored at the folder `QGuides`. This takes about 5 minutes.
 8. Run `analyzer.py` to generate `course_ratings.csv`. If you run into a course with bugs, you can copy that FAS string and paste it to the `demo or debug` section of the code. My usual debugging process is to search for that file in the IDE, reveal in Finder, open in Chrome and see what's up.
+9. Once that's done, rename `course_ratings.csv` as `YEAR_TERM.csv` like `2025_Fall.csv` and put this in `release/qguide`.
 
 ### Scraping myHarvard
 
