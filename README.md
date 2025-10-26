@@ -86,10 +86,9 @@ The code for this section is at [src/qguide](./src/qguide).
 
 The code for this section is at [src/myharvard](./src/myharvard).
 
-1. Remove existing file `course_lines.txt` to start afresh.
-2. Specify the `year` and `term` at the bottom of `get_myharvard_url_chunks.py` and run it to get the URL chunks of the courses that will be offered. This will generate `course_lines.txt`.
-3. Run `get_all_course_data.py` to get `all_courses.csv`.
-4. Rename this as `YEAR_TERM.csv` like `2025_Fall.csv` and put this in `release/myharvard`.
+1. Specify the `year` and `term` at the bottom of `get_myharvard_url_chunks.py` and run it (`uv run get_myharvard_url_chunks.py`) to get the URL chunks of the courses that will be offered. This will generate `course_urls.txt` and takes around 3 minutes.
+2. Run `uv run get_all_course_data.py` to get `all_courses.csv`.
+3. Rename this as `YEAR_TERM.csv` like `2026_Spring.csv` and put this in `release/myharvard`.
 
 
 ### Combining QGuide and myHarvard for hugems.net

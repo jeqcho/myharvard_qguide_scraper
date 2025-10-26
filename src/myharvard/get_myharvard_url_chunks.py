@@ -2,16 +2,9 @@
 Harvard Course Scraper
 
 This script scrapes course information from Harvard's course catalog (beta.my.harvard.edu).
-It extracts course codes and term information, formatting them as 'code/term' pairs.
-For example: 'HIST-LIT90HA/2025-Fall'
+It extracts full course URLs and saves them incrementally to course_urls.txt
 
-The information is stored at course_lines.txt
-
-The final HTTP response before termination is stored at final_response_before_stop.json
-
-This information will be used in another code file to construct the course URL.
-
-For example: 'https://beta.my.harvard.edu/course/SYSBIO350/2025-Spring/001'
+Example URL: 'https://beta.my.harvard.edu/course/SYSBIO350/2025-Spring/001'
 """
 
 import requests
@@ -23,65 +16,48 @@ from tqdm import tqdm
 import os
 
 def get_initial_data(base_url, headers):
-    """Get initial data to determine total number of pages."""
+    """Get initial data to determine total number of courses."""
     try:
         initial_response = requests.get(f"{base_url}&page=1", headers=headers)
         initial_response.raise_for_status()
         initial_data = initial_response.json()
-        total_hits = initial_data.get('total_hits', 0)
-        return total_hits
+        return initial_data.get('total_hits', 0)
     except Exception as e:
         print(f"Error getting initial data: {e}")
         return 0
 
-def save_response_data(data, filename):
-    """Save response data to a JSON file."""
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
 def extract_course_info(html_content):
-    """Extract course codes and term information from HTML content."""
+    """Extract course URLs from HTML content."""
     soup = BeautifulSoup(html_content, 'html.parser')
     course_cards = soup.find_all('div', class_='bg-white')
     
-    course_lines = []
+    course_urls = []
     for card in course_cards:
-        # Extract course code by finding the tooltip span first
-        tooltip_span = card.find('span', class_='hs-tooltip-content', string=re.compile(r'Subject.*Catalog.*Number'))
-        course_code = ''
-        if tooltip_span:
-            code_span = tooltip_span.find_previous_sibling('span', class_='hs-tooltip-toggle')
-            if code_span:
-                # Remove all spaces from course code
-                course_code = code_span.text.strip().replace(' ', '')
+        # Find link with href containing '/course/'
+        course_link = card.find('a', href=re.compile(r'/course/'))
         
-        # Extract term information
-        term_div = card.find('div', class_='flex gap-x-2 items-center')
-        term_text = ''
-        if term_div:
-            term_span = term_div.find('span')
-            if term_span:
-                # Replace space with hyphen in term
-                term_text = term_span.text.strip().replace(' ', '-')
-        
-        if course_code and term_text:
-            course_lines.append(f"{course_code}/{term_text}")
+        if course_link and course_link.get('href'):
+            url = course_link['href']
+            # Convert to full URL
+            if url.startswith('/'):
+                url = f"https://beta.my.harvard.edu{url}"
+            course_urls.append(url)
     
-    return course_lines
+    return course_urls
 
-def load_existing_lines(filename):
-    """Load existing course lines from file if it exists."""
+def load_existing_urls(filename):
+    """Load existing URLs from file if it exists."""
     if os.path.exists(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             return [line.strip() for line in f if line.strip()]
     return []
 
-def save_course_lines(course_lines, filename, append=False):
-    """Save course lines to a text file."""
+def save_urls(urls, filename, append=False):
+    """Save URLs to a text file."""
     mode = 'a' if append else 'w'
     with open(filename, mode, encoding='utf-8') as f:
-        for line in course_lines:
-            f.write(line + '\n')
+        for url in urls:
+            f.write(url + '\n')
 
 def fetch_page_data(url, headers):
     """Fetch and parse data from a single page."""
@@ -107,8 +83,13 @@ def scrape_harvard_courses(start_page=1, year=None, term=None):
     """
     if not year or not term:
         raise ValueError("Both year and term must be specified")
+    
+    # Remove existing course_urls.txt file if starting fresh (from page 1 or earlier)
+    if start_page <= 1 and os.path.exists('course_urls.txt'):
+        os.remove('course_urls.txt')
+        print("Removed existing course_urls.txt to start afresh")
         
-    base_url = "https://beta.my.harvard.edu/search/?q=&sort=relevance&school=All&term=All"
+    base_url = "https://beta.my.harvard.edu/search/?q=&sort=relevance&school=All"
     
     # Add term filter
     term_filter = f"&term={year}+{term}"
@@ -125,18 +106,19 @@ def scrape_harvard_courses(start_page=1, year=None, term=None):
     if total_hits == 0:
         return []
     
-    # Load existing lines if starting from a page > 1
-    existing_lines = load_existing_lines('course_lines.txt') if start_page > 1 else []
-    all_course_lines = existing_lines.copy()
+    # Load existing URLs if starting from a page > 1
+    existing_urls = load_existing_urls('course_urls.txt') if start_page > 1 else []
+    all_course_urls = existing_urls.copy()
     
     # Create progress bar for total courses
-    pbar = tqdm(total=total_hits, desc="Scraping courses", unit="course", initial=len(existing_lines))
+    pbar = tqdm(total=total_hits, desc="Scraping courses", unit="course", initial=len(existing_urls))
     print(f"Found {total_hits} total courses")
     if start_page > 1:
-        print(f"Resuming with {len(existing_lines)} existing courses")
+        print(f"Resuming with {len(existing_urls)} existing courses")
     print(f"Filtering for {year}-{term}")
     
     page = start_page
+    consecutive_empty_pages = 0
     
     while True:
         url = f"{base_url}&page={page}"
@@ -146,39 +128,49 @@ def scrape_harvard_courses(start_page=1, year=None, term=None):
 
         # Process page data
         if data and 'hits' in data:
-            course_lines = extract_course_info(data['hits'])
+            course_urls = extract_course_info(data['hits'])
             
-            if not course_lines:
-                pbar.close()
-                print(f"\nNo more courses found. Stopping.")
-                save_response_data(data, 'final_response_before_stop.json')
-                break
+            if not course_urls:
+                consecutive_empty_pages += 1
+                print(f"\nWarning: Page {page} returned no URLs (likely courses without detail pages)")
+                
+                # Only stop if we're way past expected pages or many consecutive empty pages
+                expected_max_pages = (total_hits // 10) + 10  # Rough estimate with buffer
+                if consecutive_empty_pages >= 10 or page > expected_max_pages:
+                    pbar.close()
+                    print(f"Reached stopping criteria at page {page}.")
+                    break
+                
+                page += 1
+                time.sleep(0.1)
+                continue
             
-            # Update progress bar with number of new courses found
-            new_courses = len(course_lines)
-            pbar.update(new_courses)
+            # Reset empty page counter on successful extraction
+            consecutive_empty_pages = 0
             
-            all_course_lines.extend(course_lines)
+            # Update progress and save incrementally
+            pbar.update(len(course_urls))
+            all_course_urls.extend(course_urls)
+            save_urls(course_urls, 'course_urls.txt', append=True)
             
             # Add a small delay to be respectful to the server
             time.sleep(0.1)
             page += 1
         else:
             pbar.close()
-            print("\nNo 'hits' found in the response. Stopping.")
-            save_response_data(data, 'final_response_before_stop.json')
+            print(f"\nNo 'hits' found in response for page {page}. Stopping.")
             break
     
-    # Save results
-    save_course_lines(all_course_lines, 'course_lines.txt', append=(start_page > 1))
-    print(f"\nTotal courses found: {len(all_course_lines)}")
-    print("All course lines saved to course_lines.txt")
-    return all_course_lines
+    print(f"\nTotal courses found: {len(all_course_urls)}")
+    print("All course URLs saved to course_urls.txt")
+    return all_course_urls
 
 if __name__ == "__main__":
     # Edit this if it stopped prematurely
-    start_page = 0
-    year = "2025"  # Required: specify year
-    term = "Fall"  # Required: specify term
+    # Set start_page > 1 to resume from a specific page
+    # The script will load existing URLs from course_urls.txt
+    start_page = 1  # Start from beginning
+    year = "2026"  # Required: specify year
+    term = "Spring"  # Required: specify term Fall or Spring
     
-    course_lines = scrape_harvard_courses(start_page=start_page, year=year, term=term)
+    course_urls = scrape_harvard_courses(start_page=start_page, year=year, term=term)
