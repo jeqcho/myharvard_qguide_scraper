@@ -69,18 +69,17 @@ You probably don't need to follow the steps below since the results can be found
 
 The code for this section is at [src/qguide](./src/qguide).
 
-1. First the program needs to discover all the QGuide links for that year and term. Navigate to this link `https://qreports.fas.harvard.edu/browse/index?school=FAS&calTerm=YEAR%20SEMESTER` where you replace `YEAR` with the current year (e.g. `2025`) and `SEMESTER` with one of `Spring` and `Fall`. It requires login.
+1. First the program needs to discover all the QGuide links for that year and term. Navigate to this link `https://qreports.fas.harvard.edu/browse/index?school=FAS&calTerm=YEAR%20SEMESTER` where you replace `YEAR` with the year you want the qguide for (e.g. `2025`) and `SEMESTER` with one of `Spring` and `Fall`. It requires login.
 2. Download the webpage (<kbd>ctrl</kbd>+<kbd>s</kbd> or <kbd>cmd</kbd>+<kbd>s</kbd>) as a HTML-only file. Keep the default name `QReports.html` and put it in this folder replacing the old file.
-3. Run `scraper.py` to scrape the links for the QGuides for each course. The links generated will be stored at `courses.csv`.
-4. Visit the first QGuide link scrapped at `courses.csv`. Be careful in VSCode, since it will concat the other fields and result in an invalid URL.
-5. Open the Developer Console, go to Application and click on the Cookie tab. Get the values for `ASP.NET_SessionId` and `CookieName` and paste it to `secret_cookie.txt` in the following format
+3. Make sure you are in right folder, if not run `cd src/qguide`. Then Run `uv run scraper.py` to scrape the links for the QGuides for each course. The links generated will be stored at `courses.csv`.
+4. Visit the first QGuide link scrapped at `courses.csv`. Be careful in VSCode, since it will concat the other fields and result in an invalid URL, so don't cmd+click, but instead copy paste the link.
+5. Open the Developer Console, go to Application and click on the Cookie tab. Get the values for `ASP.NET_SessionId` and `CookieName` and paste it to `src/qguide/secret_cookie.txt` in the following format
    ```text
-   ASP.NET_SessionId=YOUR_VALUE_HERE
-   CookieName=YOUR_VALUE_HERE
+   ASP.NET_SessionId=YOUR_VALUE_HERE;CookieName=YOUR_VALUE_HERE
    ```
 6. Make sure you delete the current `QGuides` folder to start afresh if it exists.
-7. Run `downloader.py` to use your cookies to download all the QGuides with the links scrapped from the previous step. The QGuides will be stored at the folder `QGuides`. This takes about 5 minutes.
-8. Run `analyzer.py` to generate `course_ratings.csv`. If you run into a course with bugs, you can copy that FAS string and paste it to the `demo or debug` section of the code. My usual debugging process is to search for that file in the IDE, reveal in Finder, open in Chrome and see what's up.
+7. Run `uv run downloader.py` to use your cookies to download all the QGuides with the links scrapped from the previous step. The QGuides will be stored at the folder `QGuides`. This takes about 6 minutes.
+8. Run `uv run analyzer.py` to generate `course_ratings.csv`. If you run into a course with bugs, you can copy that FAS string and paste it to the `demo or debug` section of the code. My usual debugging process is to search for that file in the IDE (cmd+p and paste in the course code that begins with FAS-, the file should show up), reveal in Finder, open in Chrome and see what's up. It's fine to ignore some files with errors, if for example they only contain the response ratio and nothing else.
 9. Once that's done, rename `course_ratings.csv` as `YEAR_TERM.csv` like `2025_Fall.csv` and put this in `release/qguide`.
 
 ### Scraping myHarvard

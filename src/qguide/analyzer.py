@@ -60,6 +60,7 @@ def get_gem_probability(comment):
 
 
 num_errors = 0
+error_codes = []
 
 
 def get_table_with(tables, th_text):
@@ -71,7 +72,7 @@ def get_table_with(tables, th_text):
 
 
 def analyze(unique_code):
-    global num_errors
+    global num_errors, error_codes
     with open('QGuides/' + unique_code + '.html', 'r') as f:
         page_text = f.read()
     soup = BeautifulSoup(page_text, 'html.parser')
@@ -82,6 +83,7 @@ def analyze(unique_code):
         if len(tables) < 3:
             print('ERROR: Course missing most tables')
             num_errors += 1
+            error_codes.append(unique_code)
             return []
         # check if no comments
         if tables[-1].th and tables[-1].th.text.strip() == 'Elective':
@@ -137,6 +139,7 @@ def analyze(unique_code):
     if not recs:
         # empty rec scores
         num_errors += 1
+        error_codes.append(unique_code)
         return []
     rec_stats.insert(2, statistics.mode(recs))
 
@@ -211,7 +214,7 @@ def analyze(unique_code):
 
 
 # demo or debug
-print(analyze('FAS-156950-2248-F2-1-001(Kehayova)'))
+# print(analyze('FAS-156950-2248-F2-1-001(Kehayova)'))
 
 df = pd.read_csv('courses.csv')
 unique_codes = df.unique_code.tolist()
@@ -219,6 +222,12 @@ stats = []
 for code in tqdm(unique_codes):
     stats.append(analyze(code))
 print("num_errors: " + str(num_errors))
+
+# Print the first 10 error codes if any errors exist
+if num_errors > 0:
+    print("\nFirst 10 error codes:")
+    for code in error_codes[:10]:
+        print(code)
 
 df2 = pd.DataFrame(stats, columns=[
     'unique_code',
