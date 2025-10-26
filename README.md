@@ -40,16 +40,25 @@ There is little correlation between the number of students in the class and the 
 
 ## Installation
 
-If you use a virtual environment, please specify Python 3.11 for numpy compatibility
+This project uses [uv](https://docs.astral.sh/uv/) for fast dependency management. Python 3.11 is required for numpy compatibility.
+
+First, install uv if you haven't already:
 
 ```bash
-conda create -n myharvard_qguide_scraper_env python=3.11
-conda activate myharvard_qguide_scraper_env
+# On macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# On Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Then install the requirements
+Then install dependencies:
 
-`pip install -r requirements.txt`
+```bash
+uv sync
+```
+
+This will automatically create a virtual environment with Python 3.11 and install all dependencies.
 
 ## Usage
 
