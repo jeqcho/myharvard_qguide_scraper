@@ -42,6 +42,7 @@ possible_gem_sentences = []
 
 
 def get_gem_probability(comment):
+    # someone should refactor this because this is not a probability, a better name is gem_score
     sentences = comment.split('.')
     for sentence in sentences:
         if re.search(r'\bgem\b', sentence.lower()):

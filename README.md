@@ -97,8 +97,8 @@ The code for this section is at [src/myharvard](./src/myharvard).
 
 The code for this section is at [src/hugems](./src/hugems).
 
-1. Specify the years and terms for the myharvard and qguide at `combine.py` and run it to get `qguide_myharvard.csv` in the release folder. The CSV inner joins the myHarvard records with the qguide using `course_id`.
-2. Run`course_ratings_analysis.ipynb`. This will generate the graphs above and the rest of the data release at `release/hugems`. Follow through the notebook and play around!
+1. Specify the years and terms for the myharvard and qguide at `combine.py` and run it (`uv run combine.py`) to get `qguide_myharvard.csv` automatically in the release folder. The CSV inner joins the myHarvard records with the qguide using `course_id`.
+2. Edit the year and terms at `course_ratings_analysis.ipynb` and run the notebook. This will generate the graphs above and the rest of the data release at `release/hugems`. Follow through the notebook and play around!
 
 
 # Future todo

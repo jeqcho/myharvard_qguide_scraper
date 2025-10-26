@@ -48,10 +48,10 @@ def combine_csv_files(myharvard_year, myharvard_term, qguide_year, qguide_term):
 
 if __name__ == "__main__":
     # Specify years and terms
-    myharvard_year = "2025"
-    myharvard_term = "Fall"
-    qguide_year = "2024"
-    qguide_term = "Fall"
+    myharvard_year = "2026"
+    myharvard_term = "Spring"
+    qguide_year = "2025"
+    qguide_term = "Spring"
     
     combine_csv_files(
         myharvard_year=myharvard_year,
